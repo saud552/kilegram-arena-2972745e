@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* إضافات مخصصة */
+@layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 8px #00a6ff);
+  }
+}
+
+/* منع التحديد والنقر المزدوج على العناصر */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+html, body {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
