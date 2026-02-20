@@ -1,8 +1,9 @@
 // ============================================
 // نظام الأسلحة المتقدم - Kilegram Alpha
+// Official Roster — synced with gameRegistry
 // ============================================
 
-export type AmmoType = '5.56mm' | '9mm' | '.300mag' | '12gauge';
+export type AmmoType = '5.56mm' | '7.62mm' | '9mm' | '.300mag' | '12gauge';
 
 export interface WeaponConfig {
   id: string;
@@ -10,101 +11,119 @@ export interface WeaponConfig {
   nameAr: string;
   type: 'assault_rifle' | 'smg' | 'sniper' | 'shotgun';
   damage: number;
-  fireRate: number; // ms between shots
+  fireRate: number;
   bulletSpeed: number;
-  bulletRange: number; // max distance in pixels
+  bulletRange: number;
   magazineSize: number;
-  reloadTime: number; // ms
+  reloadTime: number;
   ammoType: AmmoType;
-  spread: number; // radians of spread (0 = perfectly accurate)
-  pelletsPerShot: number; // for shotgun
+  spread: number;
+  pelletsPerShot: number;
   emoji: string;
   soundId: string;
 }
 
 export const WEAPONS: Record<string, WeaponConfig> = {
-  m4_tech: {
-    id: 'm4_tech',
-    name: 'M4-Tech',
-    nameAr: 'M4-تك',
+  k416: {
+    id: 'k416',
+    name: 'K416',
+    nameAr: 'K416',
     type: 'assault_rifle',
-    damage: 12,
-    fireRate: 120,
-    bulletSpeed: 10,
-    bulletRange: 500,
+    damage: 14,
+    fireRate: 110,
+    bulletSpeed: 11,
+    bulletRange: 520,
     magazineSize: 30,
     reloadTime: 2000,
     ammoType: '5.56mm',
-    spread: 0.05,
+    spread: 0.04,
     pelletsPerShot: 1,
     emoji: '🔫',
     soundId: 'ar_fire',
   },
-  viper_smg: {
-    id: 'viper_smg',
-    name: 'Viper-9',
-    nameAr: 'فايبر-9',
-    type: 'smg',
-    damage: 8,
-    fireRate: 80,
-    bulletSpeed: 9,
-    bulletRange: 350,
-    magazineSize: 35,
-    reloadTime: 1500,
-    ammoType: '9mm',
-    spread: 0.08,
+  ak_death: {
+    id: 'ak_death',
+    name: 'AK-Death',
+    nameAr: 'AK-ديث',
+    type: 'assault_rifle',
+    damage: 18,
+    fireRate: 140,
+    bulletSpeed: 10,
+    bulletRange: 480,
+    magazineSize: 30,
+    reloadTime: 2200,
+    ammoType: '7.62mm',
+    spread: 0.06,
     pelletsPerShot: 1,
     emoji: '🔫',
-    soundId: 'smg_fire',
+    soundId: 'ar_fire',
   },
   awm_x: {
     id: 'awm_x',
     name: 'AWM-X',
     nameAr: 'AWM-إكس',
     type: 'sniper',
-    damage: 55,
+    damage: 60,
     fireRate: 1500,
-    bulletSpeed: 16,
-    bulletRange: 900,
+    bulletSpeed: 18,
+    bulletRange: 950,
     magazineSize: 5,
     reloadTime: 3500,
     ammoType: '.300mag',
-    spread: 0.01,
+    spread: 0.008,
     pelletsPerShot: 1,
     emoji: '🔭',
     soundId: 'sniper_fire',
   },
-  thunder_sg: {
-    id: 'thunder_sg',
-    name: 'Thunder-12',
-    nameAr: 'ثاندر-12',
+  vector_neon: {
+    id: 'vector_neon',
+    name: 'Vector-Neon',
+    nameAr: 'فكتور-نيون',
+    type: 'smg',
+    damage: 9,
+    fireRate: 70,
+    bulletSpeed: 9,
+    bulletRange: 320,
+    magazineSize: 33,
+    reloadTime: 1400,
+    ammoType: '9mm',
+    spread: 0.07,
+    pelletsPerShot: 1,
+    emoji: '🔫',
+    soundId: 'smg_fire',
+  },
+  s12_breacher: {
+    id: 's12_breacher',
+    name: 'S12-Breacher',
+    nameAr: 'S12-بريتشر',
     type: 'shotgun',
-    damage: 15, // per pellet
-    fireRate: 800,
+    damage: 16,
+    fireRate: 750,
     bulletSpeed: 8,
-    bulletRange: 200,
-    magazineSize: 6,
-    reloadTime: 2500,
+    bulletRange: 180,
+    magazineSize: 8,
+    reloadTime: 2800,
     ammoType: '12gauge',
-    spread: 0.3,
-    pelletsPerShot: 6,
+    spread: 0.28,
+    pelletsPerShot: 8,
     emoji: '🔫',
     soundId: 'shotgun_fire',
   },
 };
 
-export const DEFAULT_WEAPON = 'm4_tech';
+export const DEFAULT_WEAPON = 'k416';
 
 // Ammo display names
 export const AMMO_NAMES: Record<AmmoType, string> = {
   '5.56mm': '5.56mm',
+  '7.62mm': '7.62mm',
   '9mm': '9mm',
   '.300mag': '.300 Magnum',
   '12gauge': '12 Gauge',
 };
 
 // Loot item types
-export type LootType = 'ammo_556' | 'ammo_9mm' | 'ammo_300' | 'ammo_12g' | 'medkit' | 'armor' | 'weapon';
+export type LootType = 'ammo_556' | 'ammo_762' | 'ammo_9mm' | 'ammo_300' | 'ammo_12g' | 'medkit' | 'armor' | 'weapon';
 
 export interface LootItem {
   id: string;
@@ -112,13 +131,14 @@ export interface LootItem {
   y: number;
   type: LootType;
   amount: number;
-  weaponId?: string; // if type is 'weapon'
+  weaponId?: string;
   radius: number;
   emoji: string;
 }
 
 export const LOOT_CONFIGS: Record<LootType, { emoji: string; amount: number; radius: number }> = {
   ammo_556: { emoji: '📦', amount: 30, radius: 12 },
+  ammo_762: { emoji: '📦', amount: 30, radius: 12 },
   ammo_9mm: { emoji: '📦', amount: 35, radius: 12 },
   ammo_300: { emoji: '📦', amount: 5, radius: 12 },
   ammo_12g: { emoji: '📦', amount: 12, radius: 12 },
@@ -135,7 +155,7 @@ export interface WeaponState {
   isReloading: boolean;
   reloadStartTime: number;
   lastShotTime: number;
-  skinLevel: number; // 1-5 cosmetic
+  skinLevel: number;
 }
 
 export function createDefaultWeaponState(): WeaponState {
@@ -144,6 +164,7 @@ export function createDefaultWeaponState(): WeaponState {
     ammoInMag: WEAPONS[DEFAULT_WEAPON].magazineSize,
     reserveAmmo: {
       '5.56mm': 90,
+      '7.62mm': 0,
       '9mm': 0,
       '.300mag': 0,
       '12gauge': 0,
@@ -165,6 +186,5 @@ export function calculateXP(kills: number, placement: number, survived: boolean)
 }
 
 export function getLevelFromXP(xp: number): number {
-  // Each level requires progressively more XP
   return Math.floor(Math.sqrt(xp / 50)) + 1;
 }
