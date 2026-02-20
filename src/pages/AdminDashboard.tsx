@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Megaphone, Ban, Gift, Shield, Activity, Search } from 'lucide-react';
+import { ArrowLeft, Users, Megaphone, Ban, Gift, Shield, Activity, Search, Gem } from 'lucide-react';
 import { getLevelTitle } from '@/lib/xpSystem';
 
 interface PlayerProfile {
@@ -80,6 +80,13 @@ const AdminDashboard = () => {
     const player = players.find(p => p.user_id === userId);
     if (!player) return;
     await supabase.from('profiles').update({ k_coins: player.k_coins + amount }).eq('user_id', userId);
+    loadData();
+  };
+
+  const grantGems = async (userId: string, amount: number) => {
+    const player = players.find(p => p.user_id === userId);
+    if (!player) return;
+    await supabase.from('profiles').update({ k_gems: player.k_gems + amount }).eq('user_id', userId);
     loadData();
   };
 
@@ -216,6 +223,13 @@ const AdminDashboard = () => {
                   >
                     <Gift size={12} className="inline mr-1" />
                     +100 عملة
+                  </button>
+                  <button
+                    onClick={() => grantGems(player.user_id, 50)}
+                    className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-primary/20 text-primary transition hover:bg-primary/30"
+                  >
+                    <Gem size={12} className="inline mr-1" />
+                    +50 جوهرة
                   </button>
                 </div>
               </div>

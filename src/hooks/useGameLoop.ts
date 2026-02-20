@@ -25,7 +25,7 @@ const LOOT_SPAWN_COUNT = 30;
 export interface Vector2 { x: number; y: number }
 
 function generateLoot(): LootItem[] {
-  const types: LootType[] = ['ammo_556', 'ammo_9mm', 'ammo_300', 'ammo_12g', 'medkit', 'armor'];
+  const types: LootType[] = ['ammo_556', 'ammo_762', 'ammo_9mm', 'ammo_300', 'ammo_12g', 'medkit', 'armor'];
   const weaponIds = Object.keys(WEAPONS);
   const items: LootItem[] = [];
   for (let i = 0; i < LOOT_SPAWN_COUNT; i++) {
@@ -253,7 +253,7 @@ export function useGameLoop(params: UseGameLoopParams) {
         else if (loot.type === 'weapon' && loot.weaponId) handleSwitchWeapon(loot.weaponId);
         else {
           const ammoMap: Record<string, AmmoType> = {
-            ammo_556: '5.56mm', ammo_9mm: '9mm', ammo_300: '.300mag', ammo_12g: '12gauge',
+            ammo_556: '5.56mm', ammo_762: '7.62mm', ammo_9mm: '9mm', ammo_300: '.300mag', ammo_12g: '12gauge',
           };
           const ammoType = ammoMap[loot.type];
           if (ammoType) { ws.addAmmo(ammoType, loot.amount); setWeaponDisplay(ws.getDisplayState()); }
