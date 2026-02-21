@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "@/context/AuthContext"
@@ -11,6 +11,10 @@ import Store from "@/pages/Store"
 import Squad from "@/pages/Squad"
 import AdminDashboard from "@/pages/AdminDashboard"
 import NotFound from "@/pages/NotFound"
+import LobbyScreen from "@/components/LobbyScreen"
+
+// Lazy load the heavy 3D arena
+const GameArena = lazy(() => import("@/components/GameArena"))
 
 const queryClient = new QueryClient()
 
@@ -42,6 +46,12 @@ const App = () => {
               <Route path="/store" element={<AppLayout><Store /></AppLayout>} />
               <Route path="/squad" element={<AppLayout><Squad /></AppLayout>} />
               <Route path="/profile" element={<AppLayout><Profile /></AppLayout>} />
+              <Route path="/lobby" element={<LobbyScreen />} />
+              <Route path="/arena" element={
+                <Suspense fallback={<div className="fixed inset-0 bg-background flex items-center justify-center text-foreground">جارٍ تحميل الساحة...</div>}>
+                  <GameArena />
+                </Suspense>
+              } />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
