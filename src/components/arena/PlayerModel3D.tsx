@@ -1,7 +1,11 @@
-import React, { useRef, Suspense } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { useGLTF, Sparkles } from '@react-three/drei';
+import React, { useRef, useMemo, Suspense } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
+import { createProceduralCharacter } from '@/lib/ProceduralCharacter';
+import { createProceduralWeapon, ProceduralWeaponType } from '@/lib/ProceduralWeapons';
+import { CHARACTERS } from '@/lib/gameRegistry';
+import { AssetManager } from '@/lib/AssetManager';
 
 interface PlayerModel3DProps {
   position: [number, number, number];
@@ -12,6 +16,7 @@ interface PlayerModel3DProps {
   isDead: boolean;
   isLocal: boolean;
   characterId?: string;
+  weaponType?: ProceduralWeaponType;
 }
 
 const TEAM_COLORS = { blue: '#4d8fff', red: '#ff4d4d' };
@@ -23,7 +28,7 @@ const LEVEL_EMISSIVE: Record<number, string> = {
   5: '#ff00ff',
 };
 
-// Character GLB mapping (same as CharacterModel3D)
+// Character GLB mapping
 const CHARACTER_GLB_MAP: Record<string, string> = {
   ghost_riley: '/Models/Characters/snake_eyes__fortnite_item_shop_skin.glb',
   nova_prime: '/Models/Characters/fortnite_oblivion_skin.glb',
@@ -34,45 +39,35 @@ const CHARACTER_GLB_MAP: Record<string, string> = {
   glow_phantom: '/Models/Characters/glow__fortnite_outfit.glb',
 };
 
-const GLBPlayerCharacter: React.FC<{ characterId: string }> = ({ characterId }) => {
-  const path = CHARACTER_GLB_MAP[characterId];
-  const { scene } = useGLTF(path);
-  const cloned = React.useMemo(() => scene.clone(), [scene]);
-  return <primitive object={cloned} scale={0.6} position={[0, 0, 0]} />;
-};
-
-// Simple capsule fallback for arena
-const CapsuleFallback: React.FC<{ teamColor: string; emissiveColor: string; emissiveIntensity: number }> = ({ teamColor, emissiveColor, emissiveIntensity }) => (
-  <mesh castShadow position={[0, 0.8, 0]}>
-    <capsuleGeometry args={[0.4, 0.8, 8, 16]} />
-    <meshStandardMaterial
-      color={teamColor}
-      emissive={emissiveColor}
-      emissiveIntensity={emissiveIntensity}
-      roughness={0.5}
-      metalness={0.3}
-    />
-  </mesh>
-);
-
-class GLBErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback: React.ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
-}
-
 const PlayerModel3D: React.FC<PlayerModel3DProps> = ({
-  position, rotation, team, skinLevel, health, isDead, isLocal, characterId,
+  position, rotation, team, skinLevel, health, isDead, isLocal, characterId, weaponType = 'assault_rifle',
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const ringRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
 
   const teamColor = TEAM_COLORS[team];
   const emissiveColor = LEVEL_EMISSIVE[Math.min(5, Math.max(1, skinLevel))];
   const emissiveIntensity = skinLevel >= 2 ? 0.3 * (skinLevel - 1) : 0;
+
+  // Get character colors from registry
+  const charDef = characterId ? CHARACTERS.find(c => c.id === characterId) : undefined;
+
+  // Create procedural character (always available, used as base/fallback)
+  const proceduralBody = useMemo(() => {
+    const colors = charDef?.colors ?? {
+      primary: team === 'blue' ? '#1a2a4a' : '#4a1a1a',
+      secondary: team === 'blue' ? '#2a3a5a' : '#5a2a2a',
+      accent: teamColor,
+      emissive: emissiveColor,
+    };
+    return createProceduralCharacter(colors, charDef?.armorStyle ?? 'medium');
+  }, [team, characterId, emissiveColor]);
+
+  // Create procedural weapon
+  const weaponMesh = useMemo(() => {
+    return createProceduralWeapon(weaponType);
+  }, [weaponType]);
 
   useFrame((_, delta) => {
     if (groupRef.current) {
@@ -94,25 +89,15 @@ const PlayerModel3D: React.FC<PlayerModel3DProps> = ({
     );
   }
 
-  const hasGLB = characterId && characterId in CHARACTER_GLB_MAP;
-  const capsuleFallback = <CapsuleFallback teamColor={teamColor} emissiveColor={emissiveColor} emissiveIntensity={emissiveIntensity} />;
-
   return (
     <group position={position} ref={groupRef}>
-      {/* Character model or capsule fallback */}
-      {hasGLB ? (
-        <GLBErrorBoundary fallback={capsuleFallback}>
-          <Suspense fallback={capsuleFallback}>
-            <GLBPlayerCharacter characterId={characterId!} />
-          </Suspense>
-        </GLBErrorBoundary>
-      ) : capsuleFallback}
+      {/* Procedural character body */}
+      <primitive object={proceduralBody} scale={0.6} />
 
-      {/* Weapon barrel */}
-      <mesh position={[0, 0.6, -0.9]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.05, 0.07, 0.8, 8]} />
-        <meshStandardMaterial color="#888888" metalness={0.8} roughness={0.3} />
-      </mesh>
+      {/* Procedural weapon attached to right side */}
+      <group position={[0.2, 0.5, -0.4]} rotation={[0, 0, 0]}>
+        <primitive object={weaponMesh} scale={0.6} />
+      </group>
 
       {/* Local player indicator ring */}
       {isLocal && (
